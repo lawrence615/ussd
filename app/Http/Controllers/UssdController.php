@@ -69,8 +69,6 @@ class UssdController extends Controller
     {
         $qry_str = "?phoneNumber=" . trim($phone) . "&text=" . urlencode($text) . "&sessionId=" . $session_id . "&serviceCode=" . $serviceCode;
 
-//        dd($url . $qry_str);
-
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url . $qry_str);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);

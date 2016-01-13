@@ -19,6 +19,7 @@ class KplcStaffVerificationController extends Controller
      */
     public function index(Request $request)
     {
+
         $sessionId = $request->get('sessionId');
         $serviceCode = $request->get('serviceCode');
         $phoneNumber = $request->get('phoneNumber');
