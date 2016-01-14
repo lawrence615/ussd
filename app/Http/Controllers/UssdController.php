@@ -20,12 +20,13 @@ class UssdController extends Controller
         $phoneNumber = $_REQUEST["phoneNumber"];
         $text = $_REQUEST["text"];
 
-        echo "CON Welcome";
-        exit;
 
         $remove_hash = explode("#", $serviceCode, -1);
         $filter = array_filter($remove_hash);
         $extension = explode("*", $filter[0]);
+
+        echo "CON Welcome";
+        exit;
 
 
         if (array_key_exists(4, $extension)) {
