@@ -5,8 +5,6 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 
 use App\Http\Requests;
-use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Redirect;
 
 class UssdController extends Controller
 {
@@ -41,7 +39,7 @@ class UssdController extends Controller
 
                 $no = 1;
                 foreach ($main_menu_items as $key => $value):
-                    $response .= $no . ":" . $value;
+                    $response .= $no . ":" . $value . PHP_EOL;
                     $no++;
                 endforeach;
 
@@ -51,7 +49,14 @@ class UssdController extends Controller
 
                 switch ($selected_app) {
                     case 1:
-                        $this->redirectToApp($phoneNumber, $sessionId, $this->getServerUrl() . "kplc", "", $serviceCode);
+                        $res = $this->redirectToApp($phoneNumber, $sessionId, $this->getServerUrl() . "kplc", "", $serviceCode);
+                        if ((substr(strtolower(trim($res)), 0, 3) == 'end') || (substr(strtolower(trim($res)), 0, 3) == 'con')) {
+                            header('Content-type: text/plain');
+
+                            echo $res;
+                            exit;
+
+                        }
                         break;
                     default:
                         $this->sendResponse("Invalid selection", 2);
@@ -77,6 +82,8 @@ class UssdController extends Controller
         curl_close($ch);
 
         return $content;
+
+//        return redirect()->action('KplcStaffVerificationController@index', ['phoneNumber' => trim($phone)]);
     }
 
     public function getServerUrl()
@@ -89,7 +96,7 @@ class UssdController extends Controller
     public function getAvailableApps()
     {
         $apps = [
-            '1.' => 'kplc (*384*2014*615*1#)'
+            '1.' => 'kplc',
         ];
 
         return $apps;
