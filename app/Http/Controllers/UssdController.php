@@ -23,10 +23,10 @@ class UssdController extends Controller
 
         $remove_hash = explode("#", $serviceCode, -1);
         $filter = $remove_hash;
-        echo "CON Welcome".$serviceCode;
-        exit;
+//        echo "CON Welcome".$serviceCode;
+//        exit;
         $extension = explode("*", $filter[0]);
-        print_r(array_filter($extension));exit;
+//        print_r(array_filter($extension));exit;
 
 
 
