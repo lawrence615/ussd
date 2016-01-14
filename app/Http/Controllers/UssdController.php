@@ -96,7 +96,7 @@ class UssdController extends Controller
     public function getAvailableApps()
     {
         $apps = [
-            '1.' => 'kplc',
+            '1.' => 'kplc (*384*2014*615*1#)',
         ];
 
         return $apps;
