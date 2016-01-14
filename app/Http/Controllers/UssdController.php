@@ -10,8 +10,7 @@ class UssdController extends Controller
 {
     public function index(Request $request)
     {
-//        echo "CON Welcome";
-//        exit;
+
 //        $serviceCode = $request->get('serviceCode');
 //        $sessionId = $request->get('sessionId');
 //        $phoneNumber = $request->get('phoneNumber');
@@ -20,6 +19,9 @@ class UssdController extends Controller
         $sessionId = $_REQUEST["sessionId"];
         $phoneNumber = $_REQUEST["phoneNumber"];
         $text = $_REQUEST["text"];
+
+        echo "CON Welcome";
+        exit;
 
         $remove_hash = explode("#", $serviceCode, -1);
         $filter = array_filter($remove_hash);
