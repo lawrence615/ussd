@@ -10,6 +10,8 @@ class UssdController extends Controller
 {
     public function index(Request $request)
     {
+        echo "CON Welcome";
+        exit;
         $serviceCode = $request->get('serviceCode');
         $sessionId = $request->get('sessionId');
         $phoneNumber = $request->get('phoneNumber');
