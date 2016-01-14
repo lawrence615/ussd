@@ -10,18 +10,20 @@ class UssdController extends Controller
 {
     public function index(Request $request)
     {
-        $serviceCode = $request->get('serviceCode');
-        echo $serviceCode;
-        exit;
-        $sessionId = $request->get('sessionId');
-        $phoneNumber = $request->get('phoneNumber');
-        $text = $request->get('text');
+//        echo "CON Welcome";
+//        exit;
+//        $serviceCode = $request->get('serviceCode');
+//        $sessionId = $request->get('sessionId');
+//        $phoneNumber = $request->get('phoneNumber');
+//        $text = $request->get('text');
+        $serviceCode = $_REQUEST["serviceCode"];
+        $sessionId = $_REQUEST["sessionId"];
+        $phoneNumber = $_REQUEST["phoneNumber"];
+        $text = $_REQUEST["text"];
 
         $remove_hash = explode("#", $serviceCode, -1);
         $filter = array_filter($remove_hash);
         $extension = explode("*", $filter[0]);
-
-
 
 
         if (array_key_exists(4, $extension)) {
