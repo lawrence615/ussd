@@ -46,19 +46,20 @@ class KplcStaffVerificationController extends Controller
 
 
             UssdUser::create($data);
-
-
             if ($text == '') {
                 $this->sendResponse("Please enter staff ID e.g ekp1111", 1);
             }
 
         } else {
+            if ($text == '') {
+                $this->sendResponse("Please enter staff ID e.g ekp1111", 1);
+            }
+
             $id = $text;
+//            print_r($id);exit;
 
             $staff = $this->getStaffId($id);
-
             if ($staff) {
-
                 $message = "ID is valid and it belongs to " . $staff->first_name . " " . $staff->last_name;
             } else {
                 $message = "No Staff with that id";
