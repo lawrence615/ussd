@@ -10,9 +10,9 @@ class UssdController extends Controller
 {
     public function index(Request $request)
     {
-        echo "CON Welcome";
-        exit;
         $serviceCode = $request->get('serviceCode');
+        echo $serviceCode;
+        exit;
         $sessionId = $request->get('sessionId');
         $phoneNumber = $request->get('phoneNumber');
         $text = $request->get('text');
@@ -20,6 +20,8 @@ class UssdController extends Controller
         $remove_hash = explode("#", $serviceCode, -1);
         $filter = array_filter($remove_hash);
         $extension = explode("*", $filter[0]);
+
+
 
 
         if (array_key_exists(4, $extension)) {
