@@ -56,8 +56,6 @@ class KplcStaffVerificationController extends Controller
             }
 
             $id = $text;
-//            print_r($id);exit;
-
             $staff = $this->getStaffId($id);
             if ($staff) {
                 $message = "ID is valid and it belongs to " . $staff->first_name . " " . $staff->last_name;
