@@ -33,4 +33,6 @@ Route::group(['middleware' => ['web']], function () {
 Route::group(['prefix' => 'ussd/serve'], function () {
     Route::resource('main', 'UssdController@index');
     Route::resource('kplc', 'KplcStaffVerificationController@index');
+    Route::resource('bundles', 'BundlesController@index');
+    Route::resource('mail', 'MailerController@index');
 });
