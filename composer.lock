@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "ea1fee525914154e6d6bbf071697b5a1",
-    "content-hash": "8b1485987e7c5949da82435d403e52e8",
+    "hash": "bfe4abf8937bdc82ee1bb4bd67682f4b",
+    "content-hash": "7d5e79f7f769af8259dbd569b29d7d51",
     "packages": [
         {
             "name": "classpreloader/classpreloader",
@@ -433,6 +433,59 @@
                 "laravel"
             ],
             "time": "2016-01-07 13:54:34"
+        },
+        {
+            "name": "le-yo/laravel-africas-talking-gateway",
+            "version": "1.0.5",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/le-yo/Africastalking-PHP-Gateway-class-laravel-5.git",
+                "reference": "11799772250448d5e4a4394d06ca3f04b5101992"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/le-yo/Africastalking-PHP-Gateway-class-laravel-5/zipball/11799772250448d5e4a4394d06ca3f04b5101992",
+                "reference": "11799772250448d5e4a4394d06ca3f04b5101992",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/support": "~5.1",
+                "php": ">=5.3.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "4.*",
+                "scrutinizer/ocular": "~1.1"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.0-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "leyo\\africastalkinglaravelgateway\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Leo",
+                    "email": "leo@devs.mobi",
+                    "homepage": "http://le-yo.com",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Africastalking Laravel 5 Gateway",
+            "homepage": "https://github.com/leyo/africastalkinglaravelgateway",
+            "keywords": [
+                "Africastalking",
+                "league"
+            ],
+            "time": "2015-11-30 06:44:07"
         },
         {
             "name": "league/flysystem",
