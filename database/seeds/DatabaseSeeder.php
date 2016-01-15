@@ -12,5 +12,7 @@ class DatabaseSeeder extends Seeder
     public function run()
     {
          $this->call(KplcStaffTableSeeder::class);
+         $this->call(BundlesMenuTableSeeder::class);
+         $this->call(BundlesMenuItemsTableSeeder::class);
     }
 }
