@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\BundlesMenu;
 use App\BundlesMenuItems;
+use App\BundlesSubscription;
 use App\UssdLogs;
 use App\UssdUser;
 use Illuminate\Http\Request;
@@ -129,7 +130,6 @@ class BundlesController extends Controller
 
     protected function nextStep($user, $message)
     {
-        $menu = BundlesMenu::find($user->menu_id);
         $menu_items = $this->getMenuItems($user->menu_id);
 
 
@@ -161,9 +161,9 @@ class BundlesController extends Controller
         } else {
 
             $menu = BundlesMenu::find($next_menu_id);
+            $response = $this->nextStepSwitch($user, $message, $menu);
 
-
-
+            return $response;
         }
 
 
@@ -177,13 +177,56 @@ class BundlesController extends Controller
 
     protected function nextStepSwitch($user, $message, $menu)
     {
-        $menu_items = self::getMenuItems($menu->id);
+
+        switch ($menu->menu_type) {
+            case 1:
+
+                if ($menu->id == 7) {
+                    $response = str_replace("{{name}}", "to 150MB + 150 SMS @ Sh50", $menu->title) . PHP_EOL;
+
+                    $menu_items = self::getMenuItems(7);
+                    $i = 1;
+                    foreach ($menu_items as $key => $value) {
+                        $response = $response . $i . ": " . $value->description . PHP_EOL;
+                        $i++;
+                    }
+                } else {
+                    $menu_items = self::getMenuItems($menu->id);
+                    $response = $menu->title . PHP_EOL;
+
+                    $i = 1;
+                    foreach ($menu_items as $key => $value) {
+                        $response = $response . $i . ": " . $value->description . PHP_EOL;
+                        $i++;
+                    }
+                }
+                $user->menu_id = $menu->id;
+                $user->menu_item_id = 0;
+                $user->progress = 0;
+                $user->save();
+                break;
+
+            case 2:
+                $menu_2_items = self::getMenuItems(2);
+
+                break;
+        }
+
+
+        return $response;
+
     }
 
-    function getErrorMessage($user){
+
+    protected function subscribeToBundles($user_id, $message)
+    {
+        return BundlesSubscription::create(['user_id' => $user_id, 'bundles_plan' => $message]);
+    }
+
+    function getErrorMessage($user)
+    {
         $menu = BundlesMenu::find($user->menu_id);
         $menu_items = $this->getMenuItems($user->menu_id);
-
 
 
         $i = 1;
@@ -196,7 +239,8 @@ class BundlesController extends Controller
         return $response;
     }
 
-    public function sendResponse($response, $type)
+    public
+    function sendResponse($response, $type)
     {
 
         switch ($type) {
@@ -218,7 +262,8 @@ class BundlesController extends Controller
     }
 
 
-    public function user_is_starting($text)
+    public
+    function user_is_starting($text)
     {
         if (strlen($text) > 0) {
             return FALSE;
@@ -227,8 +272,9 @@ class BundlesController extends Controller
         }
     }
 
-    //Menu Items Function
-    public static function getMenuItems($menu_id)
+//Menu Items Function
+    public
+    static function getMenuItems($menu_id)
     {
         $menu_items = BundlesMenuItems::whereMenuId($menu_id)->get();
         return $menu_items;
