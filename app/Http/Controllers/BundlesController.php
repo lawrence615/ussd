@@ -67,7 +67,19 @@ class BundlesController extends Controller
             $this->sendResponse($response, 1);
 
         }
-        if($this->user_is_starting($text)){
+
+        $result = explode("*", $text);
+        if (empty($result)) {
+            $message = $text;
+        } else {
+
+            end($result);
+            // move the internal pointer to the end of the array
+            $message = current($result);
+        }
+
+
+        if (($this->user_is_starting($text)) || ($message == '0')) {
             $user->menu_id = 1;
             $user->session = 1;
             $user->progress = 0;
@@ -89,13 +101,100 @@ class BundlesController extends Controller
             }
 
             $this->sendResponse($response, 1);
-        }else{
-            echo "CON ".$text;
+        } else {
+
+            $result = explode("*", $text);
+            if (empty($result)) {
+                $message = $text;
+            } else {
+
+                end($result);
+                // move the internal pointer to the end of the array
+                $message = current($result);
+            }
+
+            switch ($user->session) {
+                case 1:
+                    $response = $this->nextStep($user, $message);
+                    break;
+
+            }
+
+
+            $this->sendResponse($response, 1);
         }
 
 
     }
 
+    protected function nextStep($user, $message)
+    {
+        $menu = BundlesMenu::find($user->menu_id);
+        $menu_items = $this->getMenuItems($user->menu_id);
+
+
+        $i = 1;
+        $choice = "";
+        $next_menu_id = 0;
+
+        foreach ($menu_items as $key => $value):
+            $choice = $value->id;
+            $next_menu_id = $value->next_menu_id;
+            $i++;
+        endforeach;
+
+
+        /**
+         *We expect a user input at this point, if none we respond with the following message and also show the choices again
+         */
+        if (empty($choice)) {
+//            $response = "We could not understand your response" . PHP_EOL;
+
+//            $i = 1;
+//            $response = "We could not understand your response" . PHP_EOL . $menu->title . PHP_EOL;
+//
+//            foreach ($menu_items as $key => $value):
+//                $response = $response . $i . ": " . $value->description . PHP_EOL;
+//            endforeach;
+
+            return $this->getErrorMessage($user);
+        } else {
+
+            $menu = BundlesMenu::find($next_menu_id);
+
+
+
+        }
+
+
+    }
+
+    protected function previousStep($user, $message)
+    {
+
+    }
+
+
+    protected function nextStepSwitch($user, $message, $menu)
+    {
+        $menu_items = self::getMenuItems($menu->id);
+    }
+
+    function getErrorMessage($user){
+        $menu = BundlesMenu::find($user->menu_id);
+        $menu_items = $this->getMenuItems($user->menu_id);
+
+
+
+        $i = 1;
+        $response = "We could not understand your response" . PHP_EOL . $menu->title . PHP_EOL;
+
+        foreach ($menu_items as $key => $value):
+            $response = $response . $i . ": " . $value->description . PHP_EOL;
+        endforeach;
+
+        return $response;
+    }
 
     public function sendResponse($response, $type)
     {
