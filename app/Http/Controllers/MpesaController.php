@@ -5,11 +5,12 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 
 use App\Http\Requests;
-use App\Http\Controllers\Controller;
 
 class MpesaController extends Controller
 {
 
+
+    protected $user_current_leveel;
 
     public function index(Request $request)
     {
@@ -26,7 +27,12 @@ class MpesaController extends Controller
                 break;
             case 2:
                 //enter phone no.-->amount->pin->confirm
+                $this->user_current_leveel = 2;
                 $response = $this->levelTwoProcess($input);
+                break;
+
+            case 3:
+                $response = $this->processUserInput($input);
                 break;
 
             default:
@@ -66,15 +72,19 @@ class MpesaController extends Controller
         return "Enter Phone Number" . PHP_EOL;
     }
 
-    function getAmountInput(){
+
+    function getAmountInput()
+    {
         return "Enter amount to send" . PHP_EOL;
     }
 
-    function getPinInput(){
+    function getPinInput()
+    {
         return "Enter Pin" . PHP_EOL;
     }
 
-    function getConfirmationDialog(){
+    function getConfirmationDialog()
+    {
 
     }
 
@@ -103,6 +113,7 @@ class MpesaController extends Controller
                 $response = $this->getPhoneNumberInput();
                 break;
             case 2:
+                $response = $this->getAmountInput();
                 break;
             case 3:
                 break;
@@ -114,7 +125,33 @@ class MpesaController extends Controller
         return $response;
     }
 
-    protected function sendMoneyProcess(){
+    protected function processUserInput($input)
+    {
+        $exploded_text = $input['exploded_text'];
+        $mpesa_process = $exploded_text[1];
+
+//        dd($mpesa_process);
+
+        switch ($mpesa_process) {
+            case 1:
+                $response = $this->getAmountInput();
+                break;
+            case 2:
+                break;
+            case 3:
+                break;
+            default:
+                $response = $this->getErrorMessage();
+                break;
+        }
+
+        return $response;
+    }
+
+    protected function sendMoneyProcess()
+    {
+
+
 
     }
 
