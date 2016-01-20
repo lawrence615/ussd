@@ -15,91 +15,39 @@ class BundlesController extends Controller
 {
     public function index(Request $request)
     {
+        //get inputs
         $sessionId = $request->get('sessionId');
         $serviceCode = $request->get('serviceCode');
         $phoneNumber = $request->get('phoneNumber');
         $text = $request->get('text');
 
-
         /**
          * log all ussd requests
          */
-        UssdLogs::create(['phone' => $phoneNumber, 'text' => $text, 'session_id' => $sessionId, 'service_code' => $serviceCode]);
 
-        /**
-         * check if user exists
-         *
-         * count 9 numbers from right
-         */
+        UssdLogs::create(['phone' => $phoneNumber, 'text' => $text, 'session_id' => $sessionId, 'service_code' => $serviceCode]);
 
         $no = substr($phoneNumber, -9);
 
-        $user = UssdUser::where('phone', "0" . $no)->orWhere('phone', "254" . $no)->first();
-
+        //verify that the user exists
+        $user = UssdUser::where('phone', "0" . $no)->orWhere('phone', "+254" . $no)->first();
         if (!$user) {
-            $data = [];
-            $data['phone'] = "0" . $no;
-            $data['session'] = 0;
-            $data['progress'] = 0;
-            $data['menu_item_id'] = 0;
-
-            $ussd_user = UssdUser::create($data);
-
-
-            $ussd_user->menu_id = 1;
-            $ussd_user->session = 1;
-            $ussd_user->progress = 0;
-            $ussd_user->save();
-
-            /**
-             * get home menu
-             */
-
-            $bundles_menu = BundlesMenu::find(1);
-            $bundles_menu_items = $this->getMenuItems($bundles_menu->id);
-
-            $i = 1;
-            $response = $bundles_menu->title . PHP_EOL;
-            foreach ($bundles_menu_items as $key => $value) {
-                $response = $response . $i . ": " . $value->description . PHP_EOL;
-                $i++;
-            }
-
-            $this->sendResponse($response, 1);
+            $data = ['phone' => $phoneNumber, 'session' => 0, 'progress' => 0, 'pin' => 0, 'menu_id' => 0, 'menu_item_id' => 0];
+            $user = Ussduser::create($data);
 
         }
 
-        $result = explode("*", $text);
-        if (empty($result)) {
-            $message = $text;
-        } else {
 
-            end($result);
-            // move the internal pointer to the end of the array
-            $message = current($result);
-        }
-
-
-        if (($this->user_is_starting($text)) || ($message == '0')) {
+        if (($this->user_is_starting($text))) {
             $user->menu_id = 1;
             $user->session = 1;
             $user->progress = 0;
             $user->save();
 
+            $menu = BundlesMenu::find(1);
 
-            /**
-             * get home menu
-             */
+            $response = $this->nextStepSwitch($user, $menu);
 
-            $bundles_menu = BundlesMenu::find(1);
-            $bundles_menu_items = $this->getMenuItems($bundles_menu->id);
-
-            $i = 1;
-            $response = $bundles_menu->title . PHP_EOL;
-            foreach ($bundles_menu_items as $key => $value) {
-                $response = $response . $i . ": " . $value->description . PHP_EOL;
-                $i++;
-            }
 
             $this->sendResponse($response, 1);
         } else {
@@ -115,8 +63,17 @@ class BundlesController extends Controller
             }
 
             switch ($user->session) {
+
+                case 0 :
+                    break;
                 case 1:
-                    $response = $this->nextStep($user, $message);
+                    $response = $this->continueUssdProgress($user, $message);
+                    break;
+                case 2:
+                    $response = $this->subscribeToDailyInternetBundles($user,$menu=null, $message );
+                    break;
+
+                default:
                     break;
 
             }
@@ -128,7 +85,25 @@ class BundlesController extends Controller
 
     }
 
-    protected function nextStep($user, $message)
+
+    public function continueUssdProgress($user, $message)
+    {
+        $menu = BundlesMenu::find($user->menu_id);
+//        print_r($menu->t);exit;
+
+        switch ($menu->menu_type) {
+            case 0:
+                break;
+            case 1:
+                $response = $this->continueUssdMenu($user, $message, $menu);
+                break;
+        }
+
+        return $response;
+    }
+
+
+    public function continueUssdMenu($user, $message, $menu)
     {
         $menu_items = $this->getMenuItems($user->menu_id);
 
@@ -148,67 +123,50 @@ class BundlesController extends Controller
          *We expect a user input at this point, if none we respond with the following message and also show the choices again
          */
         if (empty($choice)) {
-//            $response = "We could not understand your response" . PHP_EOL;
+            $i = 1;
+            $response = "We could not understand your response" . PHP_EOL . $menu->title . PHP_EOL;
+            foreach ($menu_items as $key => $value) {
+                $response = $response . $i . ": " . $value->description . PHP_EOL;
+                $i++;
+            }
 
-//            $i = 1;
-//            $response = "We could not understand your response" . PHP_EOL . $menu->title . PHP_EOL;
-//
-//            foreach ($menu_items as $key => $value):
-//                $response = $response . $i . ": " . $value->description . PHP_EOL;
-//            endforeach;
-
-            return $this->getErrorMessage($user);
+            return $response;
         } else {
 
             $menu = BundlesMenu::find($next_menu_id);
-            $response = $this->nextStepSwitch($user, $message, $menu);
+            $response = $this->nextStepSwitch($user, $menu);
 
             return $response;
         }
 
-
     }
 
-    protected function previousStep($user, $message)
-    {
-
-    }
-
-
-    protected function nextStepSwitch($user, $message, $menu)
+    protected function nextStepSwitch($user, $menu)
     {
 
         switch ($menu->menu_type) {
             case 1:
+                $menu_items = self::getMenuItems($menu->id);
+                $response = $menu->title . PHP_EOL;
 
-                if ($menu->id == 7) {
-                    $response = str_replace("{{name}}", "to 150MB + 150 SMS @ Sh50", $menu->title) . PHP_EOL;
-
-                    $menu_items = self::getMenuItems(7);
-                    $i = 1;
-                    foreach ($menu_items as $key => $value) {
-                        $response = $response . $i . ": " . $value->description . PHP_EOL;
-                        $i++;
-                    }
-                } else {
-                    $menu_items = self::getMenuItems($menu->id);
-                    $response = $menu->title . PHP_EOL;
-
-                    $i = 1;
-                    foreach ($menu_items as $key => $value) {
-                        $response = $response . $i . ": " . $value->description . PHP_EOL;
-                        $i++;
-                    }
+                $i = 1;
+                foreach ($menu_items as $key => $value) {
+                    $response = $response . $i . ": " . $value->description . PHP_EOL;
+                    $i++;
                 }
+
+                $user->session = 1;
                 $user->menu_id = $menu->id;
                 $user->menu_item_id = 0;
                 $user->progress = 0;
                 $user->save();
                 break;
 
-            case 2:
-                $menu_2_items = self::getMenuItems(2);
 
+            case 2:
+                $response = $this->subscribeToDailyInternetBundles($user, $menu);
+
+            default:
                 break;
         }
 
@@ -217,10 +175,40 @@ class BundlesController extends Controller
 
     }
 
-
-    protected function subscribeToBundles($user_id, $message)
+    function subscribeToDailyInternetBundles($user, $menu, $message = null)
     {
-        return BundlesSubscription::create(['user_id' => $user_id, 'bundles_plan' => $message]);
+        switch ($user->progress) {
+            case 0:
+                $bundleOptions = $this->getBundleOptions(2);
+
+                $i = 1;
+                $response = $menu->title;
+                foreach ($bundleOptions as $option) {
+                    $response = $response . PHP_EOL . $i . ": " . $option->description;
+                    $i++;
+                }
+                break;
+
+            case 1:
+                $user->session = 2;
+                $user->progress = 1;
+                $user->menu_id = $menu->id;
+                $user->menu_item_id = 1;
+                $user->save();
+                return $response;
+            break;
+        }
+
+        return $response;
+    }
+
+
+    function getBundleOptions($menu_id)
+    {
+        $results = BundlesMenuItems::whereMenuId($menu_id)->get(['id', 'menu_id', 'description', 'next_menu_id']);
+//        print_r($results);exit;
+
+        return $results;
     }
 
     function getErrorMessage($user)
@@ -272,11 +260,37 @@ class BundlesController extends Controller
         }
     }
 
+    public
+    function getLatestMessage($text)
+    {
+        $result = explode("*", $text);
+        if (empty($result)) {
+            $message = $text;
+        } else {
+            end($result);
+            $message = current($result);
+        }
+        return $message;
+    }
+
 //Menu Items Function
     public
     static function getMenuItems($menu_id)
     {
         $menu_items = BundlesMenuItems::whereMenuId($menu_id)->get();
         return $menu_items;
+    }
+
+
+    public function resetUser($user)
+    {
+        $user->session = 0;
+        $user->progress = 0;
+        $user->menu_id = 0;
+        $user->confirm_from = 0;
+        $user->menu_item_id = 0;
+
+        return $user->save();
+
     }
 }
