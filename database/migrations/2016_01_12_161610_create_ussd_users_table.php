@@ -19,6 +19,7 @@ class CreateUssdUsersTable extends Migration
             $table->integer('progress')->default(0);
             $table->integer('menu_id')->default(0);
             $table->integer('menu_item_id')->default(0);
+            $table->integer('confirm_from')->default(0);
             $table->timestamps();
         });
     }
