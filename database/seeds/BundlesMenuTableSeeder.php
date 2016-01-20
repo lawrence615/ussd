@@ -25,7 +25,7 @@ class BundlesMenuTableSeeder extends Seeder
             ],
             [
                 'title' => 'Daily Internet Bundles',
-                'menu_type' => 1,
+                'menu_type' => 2,
                 'is_root' => 0
             ],
             [
