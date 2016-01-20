@@ -6,6 +6,7 @@ use App\BundlesMenu;
 use App\BundlesMenuItems;
 use App\BundlesSubscription;
 use App\UssdLogs;
+use App\UssdResponse;
 use App\UssdUser;
 use Illuminate\Http\Request;
 
@@ -70,7 +71,9 @@ class BundlesController extends Controller
                     $response = $this->continueUssdProgress($user, $message);
                     break;
                 case 2:
-                    $response = $this->subscribeToDailyInternetBundles($user,$menu=null, $message );
+                    $response = $this->subscribeToDailyInternetBundles($user, $menu = null, $message);
+                    break;
+                case 3:
                     break;
 
                 default:
@@ -89,7 +92,6 @@ class BundlesController extends Controller
     public function continueUssdProgress($user, $message)
     {
         $menu = BundlesMenu::find($user->menu_id);
-//        print_r($menu->t);exit;
 
         switch ($menu->menu_type) {
             case 0:
@@ -182,7 +184,7 @@ class BundlesController extends Controller
                 $bundleOptions = $this->getBundleOptions(2);
 
                 $i = 1;
-                $response = $menu->title;
+                $response = "Daily Internet Bundles: " . PHP_EOL;
                 foreach ($bundleOptions as $option) {
                     $response = $response . PHP_EOL . $i . ": " . $option->description;
                     $i++;
@@ -190,13 +192,14 @@ class BundlesController extends Controller
                 break;
 
             case 1:
+
+                $this->storeUssdResponseFromUser($user, $message);
                 $user->session = 2;
-                $user->progress = 1;
+                $user->progress = 2;
                 $user->menu_id = $menu->id;
                 $user->menu_item_id = 1;
                 $user->save();
-                return $response;
-            break;
+                break;
         }
 
         return $response;
@@ -206,9 +209,34 @@ class BundlesController extends Controller
     function getBundleOptions($menu_id)
     {
         $results = BundlesMenuItems::whereMenuId($menu_id)->get(['id', 'menu_id', 'description', 'next_menu_id']);
-//        print_r($results);exit;
-
         return $results;
+    }
+
+
+    function confirmBundlesToBuy($user, $message = null)
+    {
+        switch ($user->progress) {
+            case 0:
+
+                $user->session = 4;
+                $user->progress = 1;
+                $user->save();
+                break;
+        }
+
+
+        return $response;
+    }
+
+    function getBundlesToBeConfirmed($user)
+    {
+        $no = substr($user->phone, -9);
+        $no = "0" . $no;
+    }
+
+    function getUnConfirmedBets($phone)
+    {
+
     }
 
     function getErrorMessage($user)
@@ -274,8 +302,7 @@ class BundlesController extends Controller
     }
 
 //Menu Items Function
-    public
-    static function getMenuItems($menu_id)
+    public static function getMenuItems($menu_id)
     {
         $menu_items = BundlesMenuItems::whereMenuId($menu_id)->get();
         return $menu_items;
@@ -292,5 +319,12 @@ class BundlesController extends Controller
 
         return $user->save();
 
+    }
+
+
+    public function storeUssdResponseFromUser($user, $message)
+    {
+        $data = ['phone' => $user->phone, 'menu_id' => $user->menu_id, 'menu_item_id' => $user->menu_item_id, 'response' => $message];
+        return UssdResponse::create($data);
     }
 }
